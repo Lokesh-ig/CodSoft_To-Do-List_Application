@@ -1,0 +1,250 @@
+{% extends 'tasks/base.html' %}
+
+{% block content %}
+<!-- Statistics Row (Clickable Filters) -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <a href="{% url 'task_list' %}?status=all" class="text-decoration-none">
+            <div class="stat-box d-flex align-items-center justify-content-between shadow-sm {% if status_filter == 'all' %}border-primary border-2{% endif %}">
+                <div>
+                    <div class="text-muted small fw-medium">Total Tasks</div>
+                    <div class="fs-3 fw-bold text-dark">{{ total_tasks }}</div>
+                </div>
+                <div class="bg-light p-3 rounded-circle text-primary fs-4">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-6">
+        <a href="{% url 'task_list' %}?status=Pending" class="text-decoration-none">
+            <div class="stat-box d-flex align-items-center justify-content-between shadow-sm {% if status_filter == 'Pending' %}border-warning border-2{% endif %}">
+                <div>
+                    <div class="text-muted small fw-medium">Pending</div>
+                    <div class="fs-3 fw-bold text-warning">{{ pending_tasks }}</div>
+                </div>
+                <div class="bg-light p-3 rounded-circle text-warning fs-4">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-6">
+        <a href="{% url 'task_list' %}?status=In%20Progress" class="text-decoration-none">
+            <div class="stat-box d-flex align-items-center justify-content-between shadow-sm {% if status_filter == 'In Progress' %}border-info border-2{% endif %}">
+                <div>
+                    <div class="text-muted small fw-medium">In Progress</div>
+                    <div class="fs-3 fw-bold text-info">{{ in_progress_tasks }}</div>
+                </div>
+                <div class="bg-light p-3 rounded-circle text-info fs-4">
+                    <i class="fa-solid fa-spinner"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-6">
+        <a href="{% url 'task_list' %}?status=Completed" class="text-decoration-none">
+            <div class="stat-box d-flex align-items-center justify-content-between shadow-sm {% if status_filter == 'Completed' %}border-success border-2{% endif %}">
+                <div>
+                    <div class="text-muted small fw-medium">Completed Section</div>
+                    <div class="fs-3 fw-bold text-success">{{ completed_tasks }}</div>
+                </div>
+                <div class="bg-light p-3 rounded-circle text-success fs-4">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Controls Bar (Search & Filter) -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-body p-4">
+        <div class="mb-3">
+            <h4 class="fw-bold mb-1"><i class="fa-solid fa-square-check me-2 text-primary"></i>TaskFlow Dashboard</h4>
+            <p class="text-muted small mb-0">Organize, track, and manage your daily tasks and goals with TaskFlow.</p>
+        </div>
+
+        <hr class="my-3 opacity-25">
+
+        <!-- Search & Filter Form -->
+        <form method="GET" action="{% url 'task_list' %}" class="row g-2">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-muted border-end-0"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0" placeholder="Search tasks by name or description..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="" {% if not status_filter %}selected{% endif %}>Active Tasks (Default)</option>
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Tasks</option>
+                    <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending Tasks</option>
+                    <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress Tasks</option>
+                    <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed Tasks Section</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="priority" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Priorities</option>
+                    <option value="High" {% if priority_filter == 'High' %}selected{% endif %}>High</option>
+                    <option value="Medium" {% if priority_filter == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="Low" {% if priority_filter == 'Low' %}selected{% endif %}>Low</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    <option value="Work" {% if category_filter == 'Work' %}selected{% endif %}>Work</option>
+                    <option value="Personal" {% if category_filter == 'Personal' %}selected{% endif %}>Personal</option>
+                    <option value="Study" {% if category_filter == 'Study' %}selected{% endif %}>Study</option>
+                    <option value="Other" {% if category_filter == 'Other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary-custom w-100"><i class="fa-solid fa-filter me-1"></i>Filter</button>
+                {% if search_query or status_filter or priority_filter or category_filter %}
+                    <a href="{% url 'task_list' %}" class="btn btn-outline-danger" title="Clear Filters"><i class="fa-solid fa-xmark"></i></a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if search_query or status_filter or priority_filter or category_filter %}
+            <div class="mt-3 d-flex align-items-center gap-2 flex-wrap">
+                <span class="small text-muted fw-semibold">Active Filters:</span>
+                {% if search_query %}
+                    <span class="badge bg-primary rounded-pill px-3 py-2">Search: "{{ search_query }}"</span>
+                {% endif %}
+                {% if status_filter %}
+                    <span class="badge bg-info text-dark rounded-pill px-3 py-2">Status: {{ status_filter }}</span>
+                {% endif %}
+                {% if priority_filter %}
+                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2">Priority: {{ priority_filter }}</span>
+                {% endif %}
+                {% if category_filter %}
+                    <span class="badge bg-secondary rounded-pill px-3 py-2">Category: {{ category_filter }}</span>
+                {% endif %}
+                <a href="{% url 'task_list' %}" class="small text-danger ms-2 text-decoration-none fw-semibold"><i class="fa-solid fa-rotate-left me-1"></i>Reset All</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Task List Grid -->
+{% if tasks %}
+    <div class="row g-3">
+        {% for task in tasks %}
+            <div class="col-md-6 col-lg-4">
+                <div class="task-card p-4 h-100 d-flex flex-column justify-content-between {% if task.status == 'Completed' %}task-completed{% endif %}">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge rounded-pill bg-light text-dark border px-2 py-1 small">
+                                <i class="fa-solid fa-folder me-1 text-primary"></i>{{ task.category }}
+                            </span>
+                            <span class="badge rounded-pill badge-priority-{{ task.priority }} px-3 py-1">
+                                {{ task.priority }} Priority
+                            </span>
+                        </div>
+
+                        <h5 class="task-title fw-bold mb-2">{{ task.title }}</h5>
+                        {% if task.description %}
+                            <p class="text-muted small mb-3">{{ task.description|truncatewords:20 }}</p>
+                        {% else %}
+                            <p class="text-muted small fst-italic mb-3">No description provided.</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <hr class="my-3 opacity-25">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge rounded-pill badge-status-{{ task.status }} px-2 py-1">
+                                <i class="fa-regular fa-circle me-1"></i>{{ task.status }}
+                            </span>
+                            {% if task.due_date %}
+                                <span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>{{ task.due_date|date:"M d, Y" }}</span>
+                            {% else %}
+                                <span class="small text-muted fst-italic">No Due Date</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'task_toggle' task.id %}" class="btn btn-sm {% if task.status == 'Completed' %}btn-outline-secondary{% else %}btn-outline-success{% endif %} flex-grow-1" title="Toggle Completion">
+                                <i class="fa-solid {% if task.status == 'Completed' %}fa-rotate-left{% else %}fa-check{% endif %} me-1"></i>
+                                {% if task.status == 'Completed' %}Reopen{% else %}Complete{% endif %}
+                            </a>
+                            <a href="{% url 'task_update' task.id %}" class="btn btn-sm btn-outline-primary" title="Edit Task">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <a href="{% url 'task_delete' task.id %}" class="btn btn-sm btn-outline-danger" title="Delete Task">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm p-5 text-center my-4">
+        <div class="text-muted mb-3 fs-1">
+            <i class="fa-regular fa-clipboard"></i>
+        </div>
+        <h5 class="fw-bold">No tasks found</h5>
+        <p class="text-muted small">Create a new task or adjust your search filters to see results.</p>
+        <div>
+            <button class="btn btn-primary-custom px-4 rounded-3" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                <i class="fa-solid fa-plus me-1"></i>Add First Task
+            </button>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="addTaskModalLabel"><i class="fa-solid fa-square-plus me-2 text-primary"></i>Add New Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'task_create' %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Task Title <span class="text-danger">*</span></label>
+                        {{ form.title }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-medium">Category</label>
+                            {{ form.category }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-medium">Priority</label>
+                            {{ form.priority }}
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-medium">Status</label>
+                            {{ form.status }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-medium">Due Date</label>
+                            {{ form.due_date }}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary-custom px-4"><i class="fa-solid fa-save me-1"></i>Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
