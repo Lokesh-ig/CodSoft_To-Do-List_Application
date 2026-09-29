@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,14 @@
     <!-- Favicon Icon -->
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
     <link rel="shortcut icon" href="{% static 'images/favicon.svg' %}">
+    
+    <!-- Instant Theme Loader (Prevents Flicker) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('taskflow-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        })();
+    </script>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
@@ -22,6 +30,15 @@
             --primary-hover: #4338ca;
             --text-dark: #0f172a;
             --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        [data-bs-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-dark: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
         }
 
         body {
@@ -29,6 +46,7 @@
             background-color: var(--bg-color);
             color: var(--text-dark);
             min-height: 100vh;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
 
         .navbar-custom {
@@ -47,19 +65,23 @@
 
         .task-card {
             background: var(--card-bg);
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             transition: all 0.25s ease-in-out;
         }
 
         .task-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-            border-color: #cbd5e1;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
         .task-completed {
             background: #f1f5f9;
+            opacity: 0.75;
+        }
+
+        [data-bs-theme="dark"] .task-completed {
+            background: #1a2332 !important;
             opacity: 0.75;
         }
 
@@ -79,8 +101,8 @@
         .stat-box {
             border-radius: 12px;
             padding: 1.25rem;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
         }
 
         .btn-primary-custom {
@@ -88,6 +110,11 @@
             color: white;
             border: none;
             font-weight: 600;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--primary-hover);
+            color: white;
         }
 
         .btn-nav-add {
@@ -104,6 +131,64 @@
             box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
             transform: translateY(-1px);
         }
+
+        /* Theme Toggle Button */
+        .btn-theme-toggle {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+
+        .btn-theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            transform: rotate(15deg) scale(1.05);
+        }
+
+        /* Dark mode overrides for cards, forms, and modals */
+        [data-bs-theme="dark"] .card,
+        [data-bs-theme="dark"] .stat-box {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-dark) !important;
+        }
+
+        [data-bs-theme="dark"] .stat-box .text-dark {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .modal-content {
+            background-color: var(--card-bg);
+            color: var(--text-dark);
+            border-color: var(--border-color);
+        }
+
+        [data-bs-theme="dark"] .modal-header,
+        [data-bs-theme="dark"] .modal-footer {
+            background-color: #0f172a !important;
+            border-color: var(--border-color) !important;
+        }
+
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select,
+        [data-bs-theme="dark"] .input-group-text {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            border-color: var(--border-color) !important;
+        }
+
+        [data-bs-theme="dark"] footer {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-muted) !important;
+        }
     </style>
 </head>
 <body>
@@ -113,10 +198,16 @@
             <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'task_list' %}">
                 <img src="{% static 'images/logo.svg' %}" alt="TaskFlow Logo" class="navbar-brand-logo">
             </a>
-            <button class="btn btn-nav-add px-4 py-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addTaskModal">
-                <i class="fa-solid fa-plus"></i>
-                <span>Add New Task</span>
-            </button>
+            <div class="d-flex align-items-center gap-3">
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" class="btn btn-theme-toggle shadow-sm" type="button" title="Toggle Light/Dark Theme">
+                    <i id="themeIcon" class="fa-solid fa-moon fs-5"></i>
+                </button>
+                <button class="btn btn-nav-add px-4 py-2 rounded-3 d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add New Task</span>
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -147,6 +238,33 @@
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Persistent Light/Dark Theme Switcher Script -->
+    <script>
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+
+        function updateThemeUI(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            if (theme === 'dark') {
+                themeIcon.className = 'fa-solid fa-sun fs-5 text-warning';
+                themeToggleBtn.setAttribute('title', 'Switch to Light Theme');
+            } else {
+                themeIcon.className = 'fa-solid fa-moon fs-5';
+                themeToggleBtn.setAttribute('title', 'Switch to Dark Theme');
+            }
+        }
+
+        const currentTheme = localStorage.getItem('taskflow-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        updateThemeUI(currentTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            const activeTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = activeTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('taskflow-theme', newTheme);
+            updateThemeUI(newTheme);
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
