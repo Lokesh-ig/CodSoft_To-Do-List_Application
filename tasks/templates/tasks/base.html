@@ -67,12 +67,18 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            transition: all 0.25s ease-in-out;
+            transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .task-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 14px 30px rgba(79, 70, 229, 0.15);
+            border-color: #6366f1 !important;
+        }
+
+        [data-bs-theme="dark"] .task-card:hover {
+            box-shadow: 0 14px 30px rgba(99, 102, 241, 0.25);
+            border-color: #818cf8 !important;
         }
 
         .task-completed {
