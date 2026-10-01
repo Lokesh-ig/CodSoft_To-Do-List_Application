@@ -1,4 +1,4 @@
-# Task 1: To-Do List Application
+# codsoft Task 1: To-Do List Application
 
 A feature-rich, responsive, full-stack **To-Do List Application** built with **Python**, **Django**, **MySQL**, and **Bootstrap 5** for the **CodSoft Internship Program**.
 
